@@ -41,23 +41,27 @@ export const getBorrowSummary = async (
   try {
     const records = await Borrow.find().populate('book');
 
-    const formatted = records.map((borrow) => {
-      const book = borrow.book as any;
-
-      return {
-        title: book?.title || 'N/A',
-        isbn: book?.isbn || 'N/A',
-        quantity: borrow.quantity,
-        dueDate: borrow.dueDate,
-      };
-    });
+    const formatted = records
+      .filter((borrow) => borrow.book && typeof borrow.book === 'object')
+      .map((borrow) => {
+        const book = borrow.book as any;
+        return {
+          title: book?.title || 'Unknown Title',
+          isbn: book?.isbn || 'Unknown ISBN',
+          quantity: borrow.quantity,
+          dueDate: borrow.dueDate,
+        };
+      });
 
     res.status(200).json(formatted);
   } catch (err) {
-    console.error('Borrow Summary Error:', err);
+    console.error(
+      'Borrow Summary Error:',
+      err instanceof Error ? err.message : err
+    );
     res.status(500).json({
       message: 'Failed to fetch borrow records',
-      error: err instanceof Error ? err.message : err,
+      error: err instanceof Error ? err.message : JSON.stringify(err),
     });
   }
 };
