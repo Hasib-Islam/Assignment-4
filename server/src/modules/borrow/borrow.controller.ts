@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { Borrow } from './borrow.model';
 import { Book } from '../book/book.model';
-import { IBook } from '../book/book.interface';
 
 export const borrowBook = async (
   req: Request,
@@ -43,11 +42,11 @@ export const getBorrowSummary = async (
     const records = await Borrow.find().populate('book');
 
     const formatted = records.map((borrow) => {
-      const book = borrow.book as unknown as IBook;
+      const book = borrow.book as any;
 
       return {
-        title: book.title,
-        isbn: book.isbn,
+        title: book?.title || 'N/A',
+        isbn: book?.isbn || 'N/A',
         quantity: borrow.quantity,
         dueDate: borrow.dueDate,
       };
@@ -55,8 +54,10 @@ export const getBorrowSummary = async (
 
     res.status(200).json(formatted);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: 'Failed to fetch borrow records', error: err });
+    console.error('Borrow Summary Error:', err);
+    res.status(500).json({
+      message: 'Failed to fetch borrow records',
+      error: err instanceof Error ? err.message : err,
+    });
   }
 };

@@ -9,7 +9,11 @@ dotenv.config();
 
 const app: Application = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ['https://library-manager-client.vercel.app'],
+  })
+);
 app.use(express.json());
 app.use('/api/books', bookRoutes);
 app.use('/api/borrow', borrowRoutes);
